@@ -1,79 +1,18 @@
-const state = {
-  decisions: JSON.parse(localStorage.getItem('coreblue-decisions') || '[]'),
-  tasks: JSON.parse(localStorage.getItem('coreblue-tasks') || '[]')
-};
-
-function save() {
-  localStorage.setItem('coreblue-decisions', JSON.stringify(state.decisions));
-  localStorage.setItem('coreblue-tasks', JSON.stringify(state.tasks));
-}
-
-function escapeHtml(value) {
-  return value.replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
-}
-
-function renderRecords() {
-  const list = document.getElementById('savedRecords');
-  const count = document.getElementById('savedCount');
-  count.textContent = state.decisions.length;
-  if (!state.decisions.length) {
-    list.innerHTML = '<div class="empty">No local decisions have been confirmed yet.</div>';
-    return;
-  }
-  list.innerHTML = state.decisions.map(record => `
-    <div class="record">
-      <span class="pill verified">Confirmed internally</span>
-      <b>${escapeHtml(record.title)}</b>
-      <p>${escapeHtml(record.reason)}</p>
-      <small>Recorded locally on ${new Date(record.createdAt).toLocaleDateString()}</small>
-    </div>`).join('');
-}
-
-function renderTasks() {
-  const count = document.getElementById('taskCount');
-  count.textContent = state.tasks.length;
-}
-
-function showView(id) {
-  document.querySelectorAll('.tab,.view').forEach(item => item.classList.remove('active'));
-  document.querySelector(`[data-view="${id}"]`).classList.add('active');
-  document.getElementById(id).classList.add('active');
-}
-
-document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => showView(tab.dataset.view)));
-
-document.getElementById('saveDecision').addEventListener('click', () => {
-  const reason = document.getElementById('reason').value.trim();
-  if (!reason) { document.getElementById('decisionError').textContent = 'Add the team reasoning before saving.'; return; }
-  state.decisions.unshift({ title: 'Photo-eye sensor stops the conveyor', reason, createdAt: new Date().toISOString() });
-  save(); renderRecords();
-  document.getElementById('reason').value = '';
-  document.getElementById('decisionError').textContent = '';
-  document.getElementById('decisionSaved').hidden = false;
-});
-
-document.getElementById('generateTask').addEventListener('click', () => {
-  const issue = document.getElementById('issue').value.trim() || 'Conveyor sensor and interlock review';
-  const type = document.getElementById('goal').value;
-  state.tasks.unshift({ title: `${type}: ${issue}`, createdAt: new Date().toISOString() });
-  save(); renderTasks();
-  document.getElementById('taskTitle').textContent = `${type}: ${issue}`;
-  document.getElementById('task').hidden = false;
-});
-
-document.getElementById('createUpdateTask').addEventListener('click', () => {
-  state.tasks.unshift({ title: 'Review PowerFlex 525 firmware compatibility', createdAt: new Date().toISOString() });
-  save(); renderTasks();
-  document.getElementById('review').hidden = false;
-});
-
-document.getElementById('exportRecords').addEventListener('click', () => {
-  const content = JSON.stringify({ exportedAt: new Date().toISOString(), decisions: state.decisions, tasks: state.tasks }, null, 2);
-  const blob = new Blob([content], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url; link.download = 'coreblue-knowledge-record.json'; link.click();
-  URL.revokeObjectURL(url);
-});
-
-renderRecords(); renderTasks();
+const data=window.coreBlueData;
+const state={decisions:JSON.parse(localStorage.getItem('coreblue-decisions')||'[]'),tasks:JSON.parse(localStorage.getItem('coreblue-tasks')||'[]')};
+const $=id=>document.getElementById(id);
+const save=()=>{localStorage.setItem('coreblue-decisions',JSON.stringify(state.decisions));localStorage.setItem('coreblue-tasks',JSON.stringify(state.tasks));};
+const escapeHtml=value=>value.replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&gt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+const source=id=>data.sources.find(item=>item.id===id);
+function renderMap(){ $('systemMap').innerHTML=data.components.map((component,index)=>`${index?'<span class="connector">→</span>':''}<button class="map-node ${component.gap?'has-gap':''}" data-component="${component.id}"><span class="node-icon">${component.icon}</span><b>${component.name}</b><small>${component.model}</small></button>`).join(''); document.querySelectorAll('[data-component]').forEach(button=>button.addEventListener('click',()=>showComponent(button.dataset.component))); }
+function showComponent(id){const c=data.components.find(item=>item.id===id),s=source(c.evidence);document.querySelectorAll('.map-node').forEach(node=>node.classList.toggle('selected',node.dataset.component===id));$('componentDetails').innerHTML=`<p class="panel-kicker">SELECTED COMPONENT</p><div class="detail-title"><span class="detail-icon">${c.icon}</span><div><h3>${c.name}</h3><p class="muted">${c.model}</p></div></div><dl class="detail-list"><div><dt>ROLE IN THE SYSTEM</dt><dd>${c.role}</dd></div><div><dt>KEY CONFIGURATION</dt><dd>${c.configuration}</dd></div><div><dt>CONNECTIONS</dt><dd>${c.connections}</dd></div><div><dt>EVIDENCE</dt><dd><a target="_blank" href="${s.url}">${s.title} ↗</a></dd></div>${c.gap?'<div><dt>KNOWLEDGE GAP</dt><dd><span class="badge gap">Needs internal confirmation</span> The installed reason is not documented in the public source.</dd></div>':''}</dl>`;}
+function renderSources(){$('sourceList').innerHTML=data.sources.map(s=>`<a class="source-link" target="_blank" href="${s.url}"><b>${s.title}</b><span>${s.note}</span><em>Open source ↗</em></a>`).join('');}
+function allDecisions(){return [...state.decisions,...data.decisions];}
+function renderDecisions(){const records=allDecisions();$('decisionList').innerHTML=records.map(d=>{const s=source(d.source);const status=d.status==='gap'?'gap':d.status==='internal'?'internal':'documented';const label=status==='gap'?'Explanation missing':status==='internal'?'Confirmed internally':'Manufacturer documented';return `<article class="decision-card"><div class="decision-meta"><span class="badge ${status}">${label}</span>${d.owner?`<small>Confirmed by ${escapeHtml(d.owner)}</small>`:''}</div><h3>${escapeHtml(d.title)}</h3><p>${escapeHtml(d.summary)}</p>${s?`<div class="decision-evidence">Evidence: <a target="_blank" href="${s.url}">${s.title} ↗</a></div>`:''}</article>`;}).join('');$('openGapCount').textContent=allDecisions().filter(d=>d.status==='gap').length;$('gapBadge').textContent=allDecisions().filter(d=>d.status==='gap').length;}
+function renderComponentOptions(){$('affectedComponent').innerHTML=data.components.map(c=>`<option value="${c.id}">${c.name} · ${c.model}</option>`).join('');}
+function generateTask(){const issue=$('issue').value.trim()||'Review conveyor sensor and interlock behaviour';const component=data.components.find(c=>c.id===$('affectedComponent').value);const type=$('goal').value,urgency=$('urgency').value,s=source(component.evidence);const task={title:`${type}: ${issue}`,component:component.name,urgency,createdAt:new Date().toISOString()};state.tasks.unshift(task);save();$('taskCount').textContent=state.tasks.length;$('taskEmpty').hidden=true;$('taskOutput').hidden=false;$('taskOutput').innerHTML=`<div class="task-card"><span class="badge internal">AI-GENERATED DRAFT</span><h3>${escapeHtml(task.title)}</h3><div class="task-banner"><b>Approval required:</b> Do not change live control, drive, or safety settings until a qualified engineer reviews this task.</div><h4>WHY IT MATTERS</h4><p>${component.role} A fault or unverified change can interrupt material flow or create unsafe operating conditions.</p><h4>CHECKS TO PERFORM</h4><ul><li>Inspect the ${component.name} and its physical connections.</li><li>Compare HMI indication, PLC logic, and drive or input status as applicable.</li><li>Review event and fault timing around the reported condition.</li><li>Confirm the installed decision and required approval with the controls engineer.</li></ul><h4>COMPLETION CRITERIA</h4><p>Cause or impact is recorded, evidence is attached, the proposed correction is approved, and the related decision record is updated.</p><p class="note"><b>Evidence used:</b> <a target="_blank" href="${s.url}">${s.title} ↗</a> · Urgency: ${urgency}</p></div>`;}
+function renderUpdate(){const u=data.update,s=source(u.source);$('updateList').innerHTML=`<article class="panel update-card"><div><span class="badge gap">REVIEW REQUIRED</span><h3>${u.title}</h3><p>${u.summary}</p><p class="decision-evidence"><a target="_blank" href="${s.url}">${s.title} ↗</a></p></div><div class="impact-box"><b>Potential impact</b>${u.affected}<br><br><b>Required check</b>${u.checks}</div><button id="createUpdateTask" class="button primary">Create review task</button></article>`;$('createUpdateTask').addEventListener('click',()=>{state.tasks.unshift({title:'Review PowerFlex 525 firmware compatibility',component:'Variable-speed drive',urgency:'Normal review',createdAt:new Date().toISOString()});save();$('taskCount').textContent=state.tasks.length;$('createUpdateTask').textContent='Review task created';$('createUpdateTask').disabled=true;});}
+function download(){const pack={exportedAt:new Date().toISOString(),system:'Conveyor Line 01',manufacturerSources:data.sources,confirmedDecisions:state.decisions,reviewTasks:state.tasks};const url=URL.createObjectURL(new Blob([JSON.stringify(pack,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='coreblue-knowledge-pack.json';a.click();URL.revokeObjectURL(url);}
+document.querySelectorAll('.nav-item').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.nav-item,.view').forEach(item=>item.classList.remove('active'));button.classList.add('active');$(button.dataset.view).classList.add('active');$('pageTitle').textContent=button.textContent.replace(/\d/g,'').trim();}));
+$('openDecisionForm').addEventListener('click',()=>$('decisionDialog').showModal());$('saveDecision').addEventListener('click',()=>{const title=$('decisionTitle').value.trim(),reason=$('decisionReason').value.trim(),owner=$('decisionOwner').value.trim();if(!title||!reason||!owner){$('decisionError').textContent='Add a decision title, approved reasoning, and confirmer.';return;}state.decisions.unshift({title,summary:reason,owner,status:'internal',createdAt:new Date().toISOString()});save();renderDecisions();$('decisionDialog').close();$('decisionReason').value='';$('decisionOwner').value='';});$('generateTask').addEventListener('click',generateTask);$('exportRecords').addEventListener('click',download);
+renderMap();renderSources();renderDecisions();renderComponentOptions();renderUpdate();$('taskCount').textContent=state.tasks.length;
