@@ -1,26 +1,29 @@
 # CoreBlue Prototype
 
-A working browser prototype for the CoreBlue brief. It shows how a factory team can understand an automation system, retain configuration decisions, create safe investigation tasks, and assess manufacturer-update impact.
+CoreBlue is a browser-based product prototype for factory automation knowledge management. It shows how a team can map an installed automation system, link configuration choices to public manufacturer evidence, record internal reasoning, create safe review tasks, and assess a relevant manufacturer update.
 
-## Run it
+## Run locally
 
-The prototype has no dependencies or build step.
+The prototype has no build step and no dependency installation.
 
-1. Download or clone this repository.
-2. Open `index.html` in a browser.
-3. Use the four tabs during the demonstration.
+1. Download or clone the repository.
+2. Open `index.html` in a modern web browser.
+3. The prototype stores confirmed decisions and generated tasks in that browser only.
 
-## Demonstration flow
+## Demonstration script
 
-1. **System map**: explain the installed conveyor automation example and its component connections.
-2. **Decision ledger**: show source-backed choices, an explanation gap, and the team confirmation flow. Save a reason to demonstrate that knowledge remains in the company record.
-3. **Change assistant**: type a plant problem, then generate a task with checks, reason, evidence, and completion criteria.
-4. **Updates**: show a manufacturer update that may affect an installed drive, then create its review task.
-5. **Export records**: download the local decision and task record as JSON. This shows a simple knowledge-retention path for the prototype.
+Use this flow in a presentation.
+
+1. **System overview**: Select the HMI, PLC, drive, motor, and photo-eye sensor. Show their roles, configuration, connections, and evidence.
+2. **Knowledge gap**: Select the photo-eye sensor. Explain that manufacturer material supports the system pattern, while the factory-specific purpose remains unknown until an engineer confirms it.
+3. **Decision ledger**: Show documented decisions and the gap. Select **Record a decision**, add the internal reason and confirmer, then save it.
+4. **Change assistant**: Describe an operating problem. Generate a review task and show the safety boundary, checks, evidence, and completion criteria.
+5. **Updates**: Create a review task for the example PowerFlex compatibility notice. Explain that CoreBlue flags impact for engineer review, not automatic change.
+6. **Knowledge pack**: Export the local record to demonstrate how the team retains decisions and tasks.
 
 ## Evidence used
 
-The seeded example is based on public Rockwell Automation documentation:
+The seeded conveyor example uses public Rockwell Automation material:
 
 - [E-commerce Conveyor Control System](https://literature.rockwellautomation.com/idc/groups/literature/documents/wp/ssb-wp008_-en-p.pdf)
 - [Logix5000 Control Systems: Connecting PowerFlex 525 Drives Over an EtherNet/IP Network](https://literature.rockwellautomation.com/idc/groups/literature/documents/qs/iasimp-qs036_-en-p.pdf)
@@ -28,4 +31,6 @@ The seeded example is based on public Rockwell Automation documentation:
 
 ## Prototype boundary
 
-Records are stored only in the browser's local storage and can be exported by the demonstrator. A production version would add authentication, a protected company knowledge store, manufacturer update ingestion, role approvals, audit history, and links to plant asset records. It must never apply live PLC, drive, or safety changes without qualified engineer approval.
+The application uses seeded example data and browser local storage. It does not query real plant equipment, automatically ingest manufacturer notices, or change PLC, drive, or safety configurations.
+
+A production service would add company authentication, a shared access-controlled knowledge store, audit history, document ingestion and retrieval, manufacturer update monitoring, role-based approvals, and plant asset-system integration. A qualified engineer must approve every live control-system change.
