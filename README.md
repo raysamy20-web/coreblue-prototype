@@ -1,20 +1,22 @@
 # CoreBlue Prototype
 
-A working browser prototype for the CoreBlue brief. It shows how a factory team can understand an automation system, retain configuration decisions, create safe investigation tasks, and assess manufacturer update impact.
+A working browser prototype for the CoreBlue brief. It shows how a factory team can understand an automation system, retain configuration decisions, create safe investigation tasks, and assess manufacturer-update impact.
 
 ## Run it
 
-This prototype has no build step or dependencies.
+The prototype has no dependencies or build step.
 
 1. Download or clone this repository.
-2. Open `index.html` in a web browser.
+2. Open `index.html` in a browser.
+3. Use the four tabs during the demonstration.
 
 ## Demonstration flow
 
-1. Open **System map** to explain the installed conveyor automation example.
-2. Open **Decision ledger** to show documented choices, source links, and an explanation gap. Enter a reason and save it.
-3. Open **Change assistant**. Describe a plant problem, then generate an evidence-backed check task.
-4. Open **Updates** to show a sample manufacturer-update impact review.
+1. **System map**: explain the installed conveyor automation example and its component connections.
+2. **Decision ledger**: show source-backed choices, an explanation gap, and the team confirmation flow. Save a reason to demonstrate that knowledge remains in the company record.
+3. **Change assistant**: type a plant problem, then generate a task with checks, reason, evidence, and completion criteria.
+4. **Updates**: show a manufacturer update that may affect an installed drive, then create its review task.
+5. **Export records**: download the local decision and task record as JSON. This shows a simple knowledge-retention path for the prototype.
 
 ## Evidence used
 
@@ -26,4 +28,4 @@ The seeded example is based on public Rockwell Automation documentation:
 
 ## Prototype boundary
 
-This is a presentation prototype with seeded data. A production version would add user authentication, a protected company knowledge store, manufacturer update ingestion, role approvals, audit history, and integrations with control-system asset records. It must never apply live PLC, drive, or safety changes without qualified engineer approval.
+Records are stored only in the browser's local storage and can be exported by the demonstrator. A production version would add authentication, a protected company knowledge store, manufacturer update ingestion, role approvals, audit history, and links to plant asset records. It must never apply live PLC, drive, or safety changes without qualified engineer approval.
